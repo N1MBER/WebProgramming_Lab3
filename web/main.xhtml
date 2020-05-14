@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      lang="en">
+<f:view>
+    <h:head>
+        <title>Laboratory work №3 of Web Programming</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <!--        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>-->
+        <h:outputStylesheet name="main_css.css"/>
+        <h:outputScript name="jquery-3.4.1.min.js"/>
+        <h:outputScript name="paint.js"/>
+        <h:outputScript name="show_time.js"/>
+        <h:outputScript name="voiceManager.js"/>
+    </h:head>
+    <h:body>
+        <table id="header" width="100%">
+            <tr>
+                <td id="time_place">
+                    <div id="time"></div>
+                </td>
+                <td id="title_place" width="100%">
+                    <h2 id="title">Laboratory work №3</h2>
+                </td>
+            </tr>
+        </table>
+        <h:form>
+            <h:inputHidden id="formHiddenX" value="#{modelBean.x}"/>
+            <h:inputHidden id="formHiddenY" value="#{modelBean.y}"/>
+            <h:inputHidden id="formHiddenR" value="#{modelBean.r}"/>
+            <table width="100%">
+                <tr>
+                    <td width="30%">
+                        <div id="picture">
+                            <h:commandButton style="display: none" action="#{modelBean.addToList}" styleClass="super_button" onclick="return validateForm()">
+                                <canvas height='450' width='450' id='areas'/>
+                                <p:remoteCommand name="canvasAction" action="#{modelBean.addToList()}" update="result_table"/>
+                            </h:commandButton>
+                        </div>
+                    </td>
+                    <td width="70%" id="enter_place">
+                        <table id="name" width="100%">
+                            <tr>
+                                <td width="50%">
+                                    <h2 >Student: Kolesnikov Maxim<br/><br/>Group: P3210<br/><br/>Variant: 3189</h2>
+                                </td>
+                                <td width="50%">
+                                    <h:commandButton action="index" value="Back" id="suputton" styleClass="super_button"/>
+                                </td>
+                            </tr>
+                        </table>
+                        <br/><br/>
+                        <table class="enter_point" width="100%">
+                            <tr>
+                                <td width="33%">
+                                    <h2>Choose X:</h2>
+                                    <h:selectBooleanCheckbox value="false" id="bcb-4">-4</h:selectBooleanCheckbox>
+                                    <h:selectBooleanCheckbox value="false" id="bcb-3">-3</h:selectBooleanCheckbox>
+                                    <h:selectBooleanCheckbox value="false" id="bcb-2">-2</h:selectBooleanCheckbox>
+                                    <h:selectBooleanCheckbox value="false" id="bcb-1">-1</h:selectBooleanCheckbox>
+                                    <h:selectBooleanCheckbox value="false" id="bcb0">0</h:selectBooleanCheckbox>
+                                    <h:selectBooleanCheckbox value="false" id="bcb1">1</h:selectBooleanCheckbox>
+                                    <h:selectBooleanCheckbox value="false" id="bcb2">2</h:selectBooleanCheckbox>
+                                    <h:selectBooleanCheckbox value="false" id="bcb3">3</h:selectBooleanCheckbox>
+                                    <h:selectBooleanCheckbox value="false" id="bcb4">4</h:selectBooleanCheckbox>
+                                    <p class="message" id="messageX"><br/></p>
+                                </td>
+                                <td width="33%">
+                                    <h2>Enter Y (in range (-3;5)):</h2>
+                                    <h:inputText id="Y" maxlength="14"/>
+                                    <p class="message" id="messageY"><br/></p>
+                                </td>
+                                <td width="33%">
+                                    <h2>Choose R:</h2>
+                                    <h:commandLink value="1" id="cL1" onclick="kek(1)">
+                                        <f:ajax event="click"/>
+                                    </h:commandLink>
+                                    <h:outputText value="  "/>
+                                    <h:commandLink value="2" id="cL2" onclick="kek(2)">
+                                        <f:ajax event="click"/>
+                                    </h:commandLink>
+                                    <h:outputText value="  "/>
+                                    <h:commandLink value="3" id="cL3" onclick="kek(3)">
+                                        <f:ajax event="click"/>
+                                    </h:commandLink>
+                                    <h:outputText value="  "/>
+                                    <h:commandLink value="4" id="cL4" onclick="kek(4)">
+                                        <f:ajax event="click"/>
+                                    </h:commandLink>
+                                    <h:outputText value="  "/>
+                                    <h:commandLink value="5" id="cL5" onclick="kek(5)">
+                                        <f:ajax event="click"/>
+                                    </h:commandLink>
+                                    <h:outputText value="  "/>
+                                    <h:commandLink value="Xmas?" id="christmas" onclick="changeChristmas()">
+                                        <f:ajax event="click"/>
+                                    </h:commandLink>
+                                    <h:outputText value="  "/>
+                                    <p class="message" id="messageR"><br/></p>
+                                </td>
+                            </tr>
+                        </table>
+                        <p id="subbutton">
+                            <h:commandButton  value="Submit" action="#{modelBean.addToList}"
+                                              styleClass="super_button" onclick="return validateForm()">
+                                <f:ajax execute="@form" render="result_table"/>
+                            </h:commandButton>
+                        </p>
+                    </td>
+                </tr>
+            </table>
+        </h:form>
+        <div id="result">
+            <h:dataTable value="#{modelBean.list}" styleClass="pipipupu" headerClass="header"
+                         var="point" id="result_table">
+                <h:column>
+                    <f:facet name="header">X</f:facet>
+                    #{point.x}
+                </h:column>
+                <h:column>
+                    <f:facet name="header">Y</f:facet>
+                    #{point.y}
+                </h:column>
+                <h:column>
+                    <f:facet name="header">R</f:facet>
+                    #{point.r}
+                </h:column>
+                <h:column>
+                    <f:facet name="header">Hit</f:facet>
+                    #{point.inArea}
+                </h:column>
+            </h:dataTable>
+        </div>
+        <p id="design">Designed by N1MBER in Saint-Petersburg </p>
+    </h:body>
+</f:view>
+</html>

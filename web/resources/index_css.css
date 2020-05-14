@@ -1,0 +1,64 @@
+html{
+    color: white;
+    background: #101010;
+    font-family: Arial;
+    margin: 0;
+}
+
+#pipa{
+    /*background: url("Picture/g2v9.gif");*/
+}
+
+#header{
+    background: black;
+    color: white;
+    text-align: left;
+}
+
+#time_place{
+    width: 40%;
+    text-align: left;
+    margin-left: 2em;
+    font-size: 25px;
+
+}
+
+td#title_place{
+    width: 60%;
+    font-size: 30px;
+    position: center;
+    text-align: right;
+    margin-right: 20px;
+}
+#design{
+    font-size: 10px;
+    text-align: right;
+}
+
+td#name_place{
+    font-size: 30px;
+    text-align: right;
+}
+p{
+    font-size: 15px;
+}
+
+.pupa{
+    position: absolute;
+    font-size: 100pt;
+    top: 580px;
+    left: 50px;
+    border: none;
+    background: none;
+    color: white;
+    margin-left: 50px;
+    font-weight: bold;
+}
+.pupa:hover{
+    color: aliceblue;
+}
+.pupa:active{
+    /*background: rgba(0,0,0,0.28);*/
+    color: aliceblue;
+    /*border: white;*/
+}

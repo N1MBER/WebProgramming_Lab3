@@ -1,0 +1,171 @@
+<?xml version="1.0"?>
+<project name="MISP3" default="compile" basedir=".">
+
+    <property file="build.properties"/>
+    <property file="/Users/n1mber/version.properties"/>
+
+    <path id="lib_Component">
+        <fileset dir="${lib}" includes="**/*.jar"/>
+    </path>
+
+    <target name="compile" depends="clean, create">
+        <loadproperties srcfile="${changed}"/>
+        <local name="compile.fail"/>
+        <javac destdir="${compiled}" srcdir="${src}" includeantruntime="false" compiler="javac1.7" classpathref="lib_Component"  errorProperty="compile.fail"
+               failonerror="false"/>
+        <echo message=".java compiled"/>
+        <condition property="build.fail">
+            <equals arg1="${compile.fail}" arg2="true"/>
+        </condition>
+        <condition property="build.successful">
+            <equals arg1="${compile.fail}" arg2="false"/>
+        </condition>
+        <propertyfile file="${changed}">
+            <entry key="compile.fail" value="false"/>
+        </propertyfile>
+    </target>
+
+    <target name="create" >
+        <mkdir dir="${build}"/>
+        <mkdir dir="${doc}"/>
+        <mkdir dir="${result}"/>
+        <mkdir dir="${compiled}"/>
+        <echo message="Directories created"/>
+    </target>
+
+    <target name="clean">
+        <delete dir="${build}"/>
+        <delete dir="${doc}"/>
+        <delete dir="${result}"/>
+        <delete dir="${compiled}"/>
+        <echo message="Directories deleted"/>
+    </target>
+
+    <target name="build" depends="copy">
+        <war destfile="${result}/${war.name}.war" webxml="${build.webxml}">
+            <fileset dir="${build}"/>
+        </war>
+        <echo message=".war build"/>
+        <propertyfile file="build.properties">
+            <entry key="version" type="int" operation="+" value="1" pattern="0"/>
+        </propertyfile>
+    </target>
+
+    <target name="copy" depends="compile">
+        <copy todir="${build}">
+            <fileset dir="${web}"/>
+        </copy>
+        <copy todir="${build.classes}">
+            <fileset dir="${compiled}"/>
+        </copy>
+        <copy todir="${build.lib}">
+            <fileset dir="${lib}"/>
+        </copy>
+    </target>
+
+    <target name="javadoc" description="Creating javadoc" >
+        <javadoc destdir="${doc.javadoc}" classpathref="lib_Component">
+            <fileset dir="${src}"/>
+        </javadoc>
+    </target>
+
+    <target name="MD5">
+        <checksum todir="${doc.md5}" algorithm="MD5" totalproperty="md5">
+            <fileset dir="${src.test}"/>
+            <fileset dir="${src.main}"/>
+            <fileset dir="${lib}"/>
+        </checksum>
+    </target>
+
+    <target name="SHA-1">
+        <checksum todir="${doc.sha-1}" algorithm="SHA-1" totalproperty="sha1">
+            <fileset dir="${src.test}"/>
+            <fileset dir="${src.main}"/>
+            <fileset dir="${lib}"/>
+        </checksum>
+    </target>
+
+    <target name="doc" depends="clean, create, SHA-1, MD5, javadoc">
+        <loadproperties srcfile="${changed}"/>
+        <manifest file="${doc.manifest}">
+            <attribute name="Version" value="${version}"/>
+            <attribute name="MD5" value="${md5}"/>
+            <attribute name="SHA-1" value="${sha1}"/>
+            <attribute name="Author" value="${student.name}"/>
+            <attribute name="Group" value="${student.group}"/>
+        </manifest>
+    </target>
+
+    <target name="test" depends="build ">
+        <junit printsummary="withOutAndErr" >
+            <test name="test.Tests"/>
+            <classpath>
+                <pathelement location="${junit.lib}"/>
+                <pathelement location="${hamcrest-core}"/>
+                <pathelement location="${compiled}"/>
+            </classpath>
+            <formatter type="plain" usefile="false"/>
+        </junit>
+        <echo message="Test passed"/>
+    </target>
+
+    <target name="history" depends="compile" if="build.fail">
+        <condition property="norevisions">
+            <equals arg1="${checkout}" arg2="1"/>
+        </condition>
+        <fail if="norevisions">
+            No revisions left
+        </fail>
+
+        <antcall target="diff">
+            <param name="checkout" value="${checkout}"/>
+        </antcall>
+
+        <propertyfile file="${changed}">
+            <entry key="checkout" value="${checkout}"/>
+        </propertyfile>
+        <propertyfile file="${changed}">
+            <entry key="checkout" type="int" operation="-" value="1"/>
+        </propertyfile>
+        <local name="checkout"/>
+        <loadproperties srcFile="${changed}"/>
+
+        <antcall target="loadFromGit" >
+            <param name="checkout" value="${checkout}"/>
+        </antcall>
+    </target>
+
+    <target name="diff" if="build.successful">
+        <propertyfile file="${changed}" >
+            <entry key="checkout.next" value="${checkout}"/>
+        </propertyfile>
+        <propertyfile file="${changed}">
+            <entry key="checkout.next" type="int" operation="+" value="1"/>
+        </propertyfile>
+        <loadproperties srcFile="${changed}"/>
+        <echo message="Write diff to file."/>
+        <exec executable="git" output="${doc.different}">
+            <arg value="diff"/>
+            <arg value="${checkout}"/>
+            <arg value="${checkout.next}"/>
+        </exec>
+    </target>
+
+    <target name="loadFromGit" unless="build.successful">
+        <echo message="Compile failed. Loading last revesion."/>
+        <loadproperties srcFile="${changed}"/>
+        <exec executable="git">
+            <arg line="checkout ${checkout}"/>
+        </exec>
+        <antcall target="history">
+            <param name="checkout" value="${checkout}"/>
+        </antcall>
+    </target>
+
+    <target name="loadMaster">
+        <exec executable="git">
+            <arg line="checkout master"/>
+        </exec>
+    </target>
+
+</project>
