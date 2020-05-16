@@ -32,4 +32,5 @@ public class HibernateManager {
     public static SessionFactory getSessionFactory() {
         return sessionFactory;
     }
+
 }

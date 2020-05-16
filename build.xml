@@ -1,28 +1,49 @@
 <?xml version="1.0"?>
-<project name="MISP3" default="compile" basedir=".">
+<project name="MISP3" default="compile" basedir="." >
+
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+        <classpath>
+            <pathelement location="lib/ant-contrib-0.3.jar"/>
+        </classpath>
+    </taskdef>
 
     <property file="build.properties"/>
-    <property file="/Users/n1mber/version.properties"/>
+    <loadproperties srcfile="${changed}"/>
+
 
     <path id="lib_Component">
         <fileset dir="${lib}" includes="**/*.jar"/>
     </path>
 
+
     <target name="compile" depends="clean, create">
         <loadproperties srcfile="${changed}"/>
         <local name="compile.fail"/>
-        <javac destdir="${compiled}" srcdir="${src}" includeantruntime="false" compiler="javac1.7" classpathref="lib_Component"  errorProperty="compile.fail"
-               failonerror="false"/>
-        <echo message=".java compiled"/>
-        <condition property="build.fail">
+        <javac destdir="${compiled}" srcdir="${src}" includeantruntime="false" compiler="javac1.7" classpathref="lib_Component"  errorproperty="compile.fail" failonerror="false"/>
+        <if>
             <equals arg1="${compile.fail}" arg2="true"/>
-        </condition>
-        <condition property="build.successful">
-            <equals arg1="${compile.fail}" arg2="false"/>
-        </condition>
+            <then>
+                <echo message="Error"/>
+                <propertyfile file="${changed}">
+                    <entry key="build.fail" value="true"/>
+                </propertyfile>
+            </then>
+            <else>
+                <echo message="OK"/>
+                <propertyfile file="${changed}">
+                    <entry key="build.fail" value="false"/>
+                </propertyfile>
+            </else>
+        </if>
+        <local name="build.fail"/>
+        <loadproperties srcfile="${changed}"/>
+        <echo message=".java compiled"/>
         <propertyfile file="${changed}">
             <entry key="compile.fail" value="false"/>
         </propertyfile>
+        <local name="compile.fail"/>
+        <loadproperties srcfile="${changed}"/>
+        <echo message="${build.fail}"/>
     </target>
 
     <target name="create" >
@@ -97,75 +118,82 @@
     </target>
 
     <target name="test" depends="build ">
-        <junit printsummary="withOutAndErr" >
+        <junit printsummary="on" >
             <test name="test.Tests"/>
             <classpath>
                 <pathelement location="${junit.lib}"/>
                 <pathelement location="${hamcrest-core}"/>
                 <pathelement location="${compiled}"/>
             </classpath>
-            <formatter type="plain" usefile="false"/>
+            <formatter type="brief" usefile="false"/>
         </junit>
         <echo message="Test passed"/>
     </target>
 
     <target name="history" depends="compile" if="build.fail">
         <condition property="norevisions">
-            <equals arg1="${checkout}" arg2="1"/>
+            <equals arg1="${checkout.rev}" arg2="1"/>
         </condition>
         <fail if="norevisions">
             No revisions left
         </fail>
-
-        <antcall target="diff">
-            <param name="checkout" value="${checkout}"/>
-        </antcall>
-
-        <propertyfile file="${changed}">
-            <entry key="checkout" value="${checkout}"/>
-        </propertyfile>
-        <propertyfile file="${changed}">
-            <entry key="checkout" type="int" operation="-" value="1"/>
-        </propertyfile>
-        <local name="checkout"/>
-        <loadproperties srcFile="${changed}"/>
-
-        <antcall target="loadFromGit" >
-            <param name="checkout" value="${checkout}"/>
-        </antcall>
+        <local name="build.fail"/>
+        <loadproperties srcfile="${changed}"/>
+        <property name="build.fail" value="${build.fail}"/>
+        <echo message="${build.fail}"/>
+        <if>
+            <equals arg1="${build.fail}" arg2="false"/>
+            <then>
+                <antcall target="diff">
+                    <param name="checkout.rev" value="${checkout.rev}"/>
+                </antcall>
+            </then>
+            <else>
+                <propertyfile file="${changed}">
+                    <entry key="checkout.rev" operation="-" type="int" value="1"/>
+                </propertyfile>
+                <local name="checkout.rev"/>
+                <loadproperties srcfile="${changed}"/>
+                <antcall target="loadFromGit">
+                    <param name="build.fail" value="${build.fail}"/>
+                    <param name="checkout.rev" value="${checkout.rev}"/>
+                </antcall>
+            </else>
+        </if>
     </target>
 
-    <target name="diff" if="build.successful">
+    <target name="diff">
         <propertyfile file="${changed}" >
-            <entry key="checkout.next" value="${checkout}"/>
+            <entry key="checkout.next" value="${checkout.rev}"/>
         </propertyfile>
         <propertyfile file="${changed}">
             <entry key="checkout.next" type="int" operation="+" value="1"/>
         </propertyfile>
+        <local name="checkout.next"/>
         <loadproperties srcFile="${changed}"/>
-        <echo message="Write diff to file."/>
+        <echo message="Write diff to file. Revision: ${checkout.rev}"/>
         <exec executable="git" output="${doc.different}">
             <arg value="diff"/>
-            <arg value="${checkout}"/>
+            <arg value="${checkout.rev}"/>
             <arg value="${checkout.next}"/>
         </exec>
     </target>
 
     <target name="loadFromGit" unless="build.successful">
         <echo message="Compile failed. Loading last revesion."/>
-        <loadproperties srcFile="${changed}"/>
         <exec executable="git">
-            <arg line="checkout ${checkout}"/>
+            <arg line="checkout -f ${checkout.rev}"/>
         </exec>
         <antcall target="history">
-            <param name="checkout" value="${checkout}"/>
+            <param name="build.fail" value="${build.fail}"/>
+            <param name="checkout.rev" value="${checkout.rev}"/>
         </antcall>
     </target>
 
     <target name="loadMaster">
+        <loadproperties srcfile="${changed}"/>
         <exec executable="git">
-            <arg line="checkout master"/>
+            <arg line="checkout -f ${checkout.master}"/>
         </exec>
     </target>
-
 </project>

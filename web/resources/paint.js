@@ -256,6 +256,7 @@ $(document).ready(function(){
             if ($("#j_idt11-formHiddenR").val() != undefined) {
                 $("#j_idt11-formHiddenX").val(x);
                 $("#j_idt11-formHiddenY").val(y);
+                canvasAction();
             }
     }
 });
