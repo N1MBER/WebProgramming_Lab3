@@ -9,34 +9,34 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Tests {
-    private List<Point>points;
-    private List<Boolean>inArea;
+    private List<Point> points;
+    private List<Boolean> inArea;
     private String path = "src/test/points.csv";
 
-    public Tests(){
+    public Tests() {
         points = new ArrayList<>();
         inArea = new ArrayList<>();
         try {
             this.setPoints();
-        }catch (IOException e){
+        } catch (IOException e) {
             System.out.println(e.getMessage());
         }
     }
 
     public void setPoints() throws IOException {
-        try(BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(path)))){
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(path)))) {
             String line = bufferedReader.readLine();
-            while (line != null){
+            while (line != null) {
                 String values[] = line.split(",");
                 points.add(new Point(Double.parseDouble(values[1]), Double.parseDouble(values[2]),
                         Double.parseDouble(values[0]), Boolean.parseBoolean(values[3])));
                 inArea.add(Boolean.parseBoolean(values[3]));
+                line = bufferedReader.readLine();
             }
-        }catch (IOException e){
+        } catch (IOException e) {
             System.out.println(e.getMessage());
         }
     }
-
 
     @Test
     public void checkDot0(){

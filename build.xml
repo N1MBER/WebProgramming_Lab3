@@ -118,7 +118,7 @@
     </target>
 
     <target name="test" depends="build ">
-        <junit printsummary="on" >
+        <junit printsummary="withOutAndErr" >
             <test name="test.Tests"/>
             <classpath>
                 <pathelement location="${junit.lib}"/>
